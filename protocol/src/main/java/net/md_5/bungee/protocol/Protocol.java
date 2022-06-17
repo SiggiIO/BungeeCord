@@ -11,6 +11,8 @@ import lombok.Data;
 import lombok.Getter;
 import net.md_5.bungee.protocol.packet.BossBar;
 import net.md_5.bungee.protocol.packet.Chat;
+import net.md_5.bungee.protocol.packet.ChatPreviewRequest;
+import net.md_5.bungee.protocol.packet.ChatPreviewResponse;
 import net.md_5.bungee.protocol.packet.ClearTitles;
 import net.md_5.bungee.protocol.packet.ClientChat;
 import net.md_5.bungee.protocol.packet.ClientCommand;
@@ -37,7 +39,9 @@ import net.md_5.bungee.protocol.packet.Respawn;
 import net.md_5.bungee.protocol.packet.ScoreboardDisplay;
 import net.md_5.bungee.protocol.packet.ScoreboardObjective;
 import net.md_5.bungee.protocol.packet.ScoreboardScore;
+import net.md_5.bungee.protocol.packet.ServerData;
 import net.md_5.bungee.protocol.packet.SetCompression;
+import net.md_5.bungee.protocol.packet.SetDisplayChatPreview;
 import net.md_5.bungee.protocol.packet.StatusRequest;
 import net.md_5.bungee.protocol.packet.StatusResponse;
 import net.md_5.bungee.protocol.packet.Subtitle;
@@ -326,6 +330,21 @@ public enum Protocol
                     map( ProtocolConstants.MINECRAFT_1_17, 0x4A ),
                     map( ProtocolConstants.MINECRAFT_1_19, 0x49 )
             );
+            TO_CLIENT.registerPacket(
+                    SetDisplayChatPreview.class,
+                    SetDisplayChatPreview::new,
+                    map( ProtocolConstants.MINECRAFT_1_19, 0x4B )
+            );
+            TO_CLIENT.registerPacket(
+                    ChatPreviewResponse.class,
+                    ChatPreviewResponse::new,
+                    map( ProtocolConstants.MINECRAFT_1_19, 0x0C )
+            );
+            TO_CLIENT.registerPacket(
+                    ServerData.class,
+                    ServerData::new,
+                    map( ProtocolConstants.MINECRAFT_1_19, 0x3F )
+            );
 
             TO_SERVER.registerPacket(
                     KeepAlive.class,
@@ -358,6 +377,11 @@ public enum Protocol
                     ClientChat.class,
                     ClientChat::new,
                     map( ProtocolConstants.MINECRAFT_1_19, 0x04 )
+            );
+            TO_SERVER.registerPacket(
+                    ChatPreviewRequest.class,
+                    ChatPreviewRequest::new,
+                    map( ProtocolConstants.MINECRAFT_1_19, 0x05 )
             );
             TO_SERVER.registerPacket(
                     TabCompleteRequest.class,
