@@ -58,7 +58,9 @@ import net.md_5.bungee.protocol.packet.ClientSettings;
 import net.md_5.bungee.protocol.packet.Kick;
 import net.md_5.bungee.protocol.packet.PlayerListHeaderFooter;
 import net.md_5.bungee.protocol.packet.PluginMessage;
+import net.md_5.bungee.protocol.packet.ServerData;
 import net.md_5.bungee.protocol.packet.SetCompression;
+import net.md_5.bungee.protocol.packet.SetDisplayChatPreview;
 import net.md_5.bungee.protocol.packet.SystemChat;
 import net.md_5.bungee.tab.ServerUnique;
 import net.md_5.bungee.tab.TabList;
@@ -137,6 +139,12 @@ public final class UserConnection implements ProxiedPlayer
     @Getter
     @Setter
     private ForgeServerHandler forgeServerHandler;
+    /*========================================================================*/
+    @Getter
+    private boolean handlingChatPreview;
+    @Getter
+    private boolean backendHandlingChatPreview;
+    private boolean clientsideHandlingChatPreview;
     /*========================================================================*/
     private final Unsafe unsafe = new Unsafe()
     {
@@ -752,5 +760,35 @@ public final class UserConnection implements ProxiedPlayer
     public Scoreboard getScoreboard()
     {
         return serverSentScoreboard;
+    }
+
+    @Override
+    public void setHandlingChatPreview(boolean enabled)
+    {
+        handlingChatPreview = enabled;
+        updateClientsideChatPreview();
+    }
+
+    public void setBackendHandlingChatPreview(boolean enabled)
+    {
+        backendHandlingChatPreview = enabled;
+        updateClientsideChatPreview();
+    }
+
+    private void updateClientsideChatPreview()
+    {
+        boolean enabled = handlingChatPreview || backendHandlingChatPreview;
+        if ( clientsideHandlingChatPreview != enabled )
+        {
+            if ( getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_19 )
+            {
+                if ( enabled )
+                {
+                    unsafe().sendPacket( new ServerData( null, null, true ) );
+                }
+                unsafe().sendPacket( new SetDisplayChatPreview( enabled ) );
+            }
+            clientsideHandlingChatPreview = enabled;
+        }
     }
 }
